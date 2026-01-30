@@ -1,0 +1,24 @@
+# Host descriptions for LLM context (read-only)
+# Copy this file to hosts.yaml and add your own entries.
+#
+# Two formats are supported:
+#
+# 1) Simple — alias: description
+# 2) Structured — alias with description and per-host tools
+
+# Simple format
+monitoring: Grafana + Prometheus stack, 10.0.0.50
+
+# Structured format
+webserver:
+  description: Production nginx reverse proxy, Ubuntu 22.04, 8GB RAM
+  tools:
+    - nginx -t
+    - systemctl status nginx
+    - tail -f /var/log/nginx/access.log
+
+db-primary:
+  description: PostgreSQL 16 primary, handles all write traffic
+  tools:
+    - pg_isready
+    - systemctl status postgresql

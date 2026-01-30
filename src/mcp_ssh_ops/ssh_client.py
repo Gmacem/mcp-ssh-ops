@@ -1,75 +1,77 @@
 """SSH client for executing commands on remote hosts."""
 
-import paramiko
+import asyncio
+import asyncssh
 from typing import Optional
 
 
 class SSHClient:
-    """Simple SSH client wrapper."""
+    """Async SSH client wrapper using asyncssh.
+
+    Automatically loads ~/.ssh/config for host aliases, default user/port/key,
+    ProxyJump, and other directives. Explicit arguments override config values.
+    """
 
     def __init__(
         self,
         hostname: str,
-        username: str,
+        username: Optional[str] = None,
         password: Optional[str] = None,
         key_filename: Optional[str] = None,
-        port: int = 22,
+        port: Optional[int] = None,
     ):
         self.hostname = hostname
         self.username = username
         self.password = password
         self.key_filename = key_filename
         self.port = port
-        self._client: Optional[paramiko.SSHClient] = None
+        self._conn: Optional[asyncssh.SSHClientConnection] = None
 
-    def connect(self):
-        """Establish SSH connection."""
-        if self._client is not None:
+    async def connect(self):
+        """Establish SSH connection, applying ~/.ssh/config automatically."""
+        if self._conn is not None:
             return
 
-        self._client = paramiko.SSHClient()
-        self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        connect_kwargs: dict = {"host": self.hostname, "known_hosts": None}
 
-        connect_kwargs = {
-            "hostname": self.hostname,
-            "port": self.port,
-            "username": self.username,
-        }
-
+        if self.username:
+            connect_kwargs["username"] = self.username
+        if self.port:
+            connect_kwargs["port"] = self.port
         if self.password:
             connect_kwargs["password"] = self.password
         elif self.key_filename:
-            connect_kwargs["key_filename"] = self.key_filename
+            connect_kwargs["client_keys"] = [self.key_filename]
 
-        self._client.connect(**connect_kwargs)
+        self._conn = await asyncssh.connect(**connect_kwargs)
 
-    def execute(self, command: str, timeout: int = 30) -> dict:
+    async def execute(self, command: str, timeout: int = 30) -> dict:
         """
         Execute a command on the remote host.
 
         Returns:
             dict with stdout, stderr, and exit_code
         """
-        if self._client is None:
-            self.connect()
+        if self._conn is None:
+            await self.connect()
 
-        stdin, stdout, stderr = self._client.exec_command(command, timeout=timeout)
+        result = await asyncio.wait_for(self._conn.run(command), timeout=timeout)
 
         return {
-            "stdout": stdout.read().decode("utf-8"),
-            "stderr": stderr.read().decode("utf-8"),
-            "exit_code": stdout.channel.recv_exit_status(),
+            "stdout": result.stdout or "",
+            "stderr": result.stderr or "",
+            "exit_code": result.exit_status,
         }
 
     def close(self):
         """Close the SSH connection."""
-        if self._client:
-            self._client.close()
-            self._client = None
+        if self._conn:
+            self._conn.close()
+            self._conn = None
 
-    def __enter__(self):
-        self.connect()
+    async def __aenter__(self):
+        await self.connect()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         self.close()
