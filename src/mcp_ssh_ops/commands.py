@@ -12,7 +12,6 @@ class CommandValidator:
 
     def __init__(self, config_path: Optional[Path] = None):
         if config_path is None:
-            # Default to commands.yaml in project root
             config_path = Path(__file__).parent.parent.parent / "commands.yaml"
 
         with open(config_path) as f:
@@ -38,16 +37,13 @@ class CommandValidator:
         if not command or not command.strip():
             return False, "Command cannot be empty"
 
-        # Check command length
         max_length = self.settings.get("max_command_length", 1000)
         if len(command) > max_length:
             return False, f"Command exceeds maximum length of {max_length} characters"
 
-        # Check if pipes are allowed
         if "|" in command and not self.settings.get("allow_pipes", True):
             return False, "Piped commands are not allowed"
 
-        # Parse the command to validate each part
         parts = command.split("|")
 
         for part in parts:
@@ -55,7 +51,6 @@ class CommandValidator:
             if not part:
                 continue
 
-            # Get the base command
             try:
                 tokens = shlex.split(part)
             except ValueError as e:
@@ -66,15 +61,12 @@ class CommandValidator:
 
             base_cmd = tokens[0]
 
-            # Check if it's in dangerous commands
             if base_cmd in self.dangerous_commands:
                 if not allow_dangerous:
                     return False, (
                         f"Command '{base_cmd}' is dangerous and requires "
                         "allow_dangerous=true flag"
                     )
-
-            # Check if it's in safe commands
             elif base_cmd not in self.safe_commands:
                 return False, (
                     f"Command '{base_cmd}' is not in the allowlist. "

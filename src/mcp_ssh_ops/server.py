@@ -7,13 +7,8 @@ from .host_memory import HostMemory
 from .ssh_client import SSHClient
 
 
-# Initialize MCP server
 mcp = FastMCP("SSH Operations")
-
-# Initialize command validator
 validator = CommandValidator()
-
-# Initialize host memory
 memory = HostMemory()
 
 
@@ -46,12 +41,10 @@ async def ssh_exec(
     Returns:
         Command output
     """
-    # Validate command
     is_valid, error = validator.validate(command, allow_dangerous=allow_dangerous)
     if not is_valid:
         return f"ERROR: {error}"
 
-    # Execute command
     try:
         async with SSHClient(
             hostname=hostname,
@@ -64,7 +57,6 @@ async def ssh_exec(
                 command, timeout=validator.settings.get("default_timeout", 30)
             )
 
-            # Format output
             output = f"Command: {command}\n"
             output += f"Exit code: {result['exit_code']}\n\n"
 

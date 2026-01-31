@@ -1,15 +1,8 @@
-# Command allowlist configuration for SSH operations
-# Only commands listed here can be executed via MCP
-
-# Safe read-only diagnostic commands (always allowed)
 safe_commands:
-  # Process information
   - ps
   - top
   - htop
   - pstree
-
-  # Network diagnostics
   - ss
   - netstat
   - ip
@@ -18,19 +11,13 @@ safe_commands:
   - traceroute
   - nslookup
   - dig
-
-  # Disk and filesystem
   - df
   - du
   - lsof
   - lsblk
   - findmnt
-
-  # Memory
   - free
   - vmstat
-
-  # System information
   - uptime
   - who
   - w
@@ -38,19 +25,13 @@ safe_commands:
   - uname
   - hostname
   - date
-
-  # File reading (read-only)
   - cat
   - head
   - tail
   - less
   - more
-
-  # Logs
   - journalctl
   - dmesg
-
-  # Text processing utilities
   - grep
   - awk
   - sed
@@ -60,29 +41,16 @@ safe_commands:
   - cut
   - tr
 
-# Dangerous commands (require explicit allow_dangerous=true flag)
-# These may modify system state or kill processes
 dangerous_commands:
-  # Process management
-  - kill       # Kill specific process
-  - pkill      # Kill by name
-  - killall    # Kill all processes by name
+  - kill
+  - pkill
+  - killall
+  - systemctl
+  - service
+  - tcpdump
+  - iperf
 
-  # Service management
-  - systemctl  # Manage services (start/stop/restart)
-  - service    # Legacy service management
-
-  # Network testing (can generate traffic)
-  - tcpdump    # Packet capture
-  - iperf      # Bandwidth testing
-
-# Global settings
 settings:
-  # Allow piping commands together
   allow_pipes: true
-
-  # Maximum command length
   max_command_length: 1000
-
-  # Timeout for command execution (seconds)
   default_timeout: 30
