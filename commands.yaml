@@ -1,42 +1,42 @@
 safe_commands:
   # Process / CPU
-  ps:
-  top:
-  htop:
-  pstree:
-  mpstat:
-  pidstat:
+  ps: {}
+  top: {}
+  htop: {}
+  pstree: {}
+  mpstat: {}
+  pidstat: {}
 
   # Memory
-  free:
-  vmstat:
+  free: {}
+  vmstat: {}
 
   # Performance / IO
-  sar:
-  iostat:
+  sar: {}
+  iostat: {}
 
   # Disk / Filesystem
-  df:
-  du:
-  lsof:
-  lsblk:
-  findmnt:
-  stat:
-  file:
-  blkid:
+  df: {}
+  du: {}
+  lsof: {}
+  lsblk: {}
+  findmnt: {}
+  stat: {}
+  file: {}
+  blkid: {}
 
   # Network
-  ss:
-  netstat:
+  ss: {}
+  netstat: {}
   ip:
     args:
       blacklist: [add, del, delete, set, flush, replace, change, append]
-  ping:
-  traceroute:
-  mtr:
-  nslookup:
-  dig:
-  host:
+  ping: {}
+  traceroute: {}
+  mtr: {}
+  nslookup: {}
+  dig: {}
+  host: {}
   arp:
     args:
       blacklist: [-s, -d, --delete, -f, --file]
@@ -45,26 +45,26 @@ safe_commands:
       blacklist: [add, del, delete]
 
   # System info
-  uptime:
-  who:
-  w:
-  last:
-  uname:
+  uptime: {}
+  who: {}
+  w: {}
+  last: {}
+  uname: {}
   date:
     args:
       blacklist: [-s, --set]
-  id:
-  whoami:
-  groups:
-  printenv:
+  id: {}
+  whoami: {}
+  groups: {}
+  printenv: {}
 
   # Hardware
-  lscpu:
-  lsmem:
-  lspci:
-  lsusb:
-  nproc:
-  arch:
+  lscpu: {}
+  lsmem: {}
+  lspci: {}
+  lsusb: {}
+  nproc: {}
+  arch: {}
   timedatectl:
     args:
       blacklist: [set-time, set-timezone, set-ntp, set-local-rtc]
@@ -73,16 +73,16 @@ safe_commands:
       blacklist: [set-hostname, set-deployment, set-location, set-chassis, set-icon-name]
 
   # File reading
-  cat:
-  head:
-  tail:
+  cat: {}
+  head: {}
+  tail: {}
   less:
     args:
       blacklist: [-o, -O]
-  more:
-  ls:
-  which:
-  whereis:
+  more: {}
+  ls: {}
+  which: {}
+  whereis: {}
 
   # Logs
   journalctl:
@@ -101,45 +101,45 @@ safe_commands:
       blacklist: [-C, --clear, -c]
 
   # Text processing
-  grep:
+  grep: {}
   sort:
     args:
       blacklist: [-o, --output]
-  uniq:
-  wc:
-  cut:
-  tr:
-  diff:
-  strings:
-  tac:
-  column:
+  uniq: {}
+  wc: {}
+  cut: {}
+  tr: {}
+  diff: {}
+  strings: {}
+  tac: {}
+  column: {}
 
 dangerous_commands:
   # Process management
-  kill:
-  pkill:
-  killall:
+  kill: {}
+  pkill: {}
+  killall: {}
 
   # Service management
-  systemctl:
-  service:
+  systemctl: {}
+  service: {}
 
   # Network capture / traffic
-  tcpdump:
-  iperf:
-  ifconfig:
-  ethtool:
+  tcpdump: {}
+  iperf: {}
+  ifconfig: {}
+  ethtool: {}
 
   # System
-  hostname:
+  hostname: {}
 
   # Debug / tracing
-  strace:
-  ltrace:
+  strace: {}
+  ltrace: {}
 
   # Can execute arbitrary commands via internal scripting
-  awk:
-  sed:
+  awk: {}
+  sed: {}
 
 settings:
   allow_pipes: true
