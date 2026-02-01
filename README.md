@@ -123,29 +123,25 @@ This constructs: `ps aux | grep python | wc -l` with every token escaped via `sh
 
 ## Configuration
 
-Edit `commands.yaml` to customize allowed commands:
+Edit `commands.yaml` to customize allowed commands. Both `safe_commands` and `dangerous_commands` are dicts where each key is a command name. A command with no value (or `null`) has no argument restrictions. To restrict arguments, add an `args` key with `whitelist` and/or `blacklist`:
 
 ```yaml
 safe_commands:
-  - ps
-  - df
-  - free
+  ps:
+  df:
+  free:
+  ip:
+    args:
+      blacklist: [add, del, set, flush]
+  dmesg:
+    args:
+      blacklist: [-C, --clear, -c]
 
 dangerous_commands:
-  - kill
-  - systemctl
-  - awk
-  - sed
-
-blocked_args:
-  ip:
-    - add
-    - del
-    - set
-    - flush
-  dmesg:
-    - -C
-    - --clear
+  kill:
+  systemctl:
+  awk:
+  sed:
 
 settings:
   allow_pipes: true
@@ -157,13 +153,18 @@ settings:
 
 - **Safe commands**: Read-only diagnostic tools (ps, df, free, etc.)
 - **Dangerous commands**: Can modify system state (kill, systemctl) or execute arbitrary commands (awk, sed), require `allow_dangerous=true`
-- **Blocked args**: Per-command argument blacklist preventing state-changing flags/subcommands (e.g. `ip addr add`, `dmesg --clear`)
 - **Not in allowlist**: Automatically rejected (rm, shutdown, etc.)
 
-### Argument Blocking
+### Per-Command Argument Restrictions
 
-Commands like `ip`, `journalctl`, `date` are safe for read-only use but have flags or subcommands that modify state. The `blocked_args` section blocks specific arguments:
+Each command can define `whitelist` and/or `blacklist` under `args`:
 
+- **whitelist**: If set, only these exact arguments are allowed
+- **blacklist**: If set, these arguments are blocked (supports exact match, `--flag=value`, and combined short flags like `-Cl` matching `-C`)
+
+Both can be combined — whitelist is checked first, then blacklist.
+
+Examples of blacklist matching:
 - Exact match: `-C` blocks `dmesg -C`
 - Long flags with values: `--vacuum-size` blocks `journalctl --vacuum-size=100M`
 - Combined short flags: `-C` blocks `dmesg -Cl`
@@ -177,5 +178,5 @@ This server eliminates shell injection by construction:
 - **Automatic escaping**: Every token passes through `shlex.quote()` before reaching the shell. The only shell operators in the final command are `|` characters inserted by the server itself
 - **Program name validation**: Program names must match `^[a-zA-Z0-9_][a-zA-Z0-9_.+-]*$` — no paths like `/bin/bash`, no shell operators
 - **Allowlist enforcement**: Only commands in `safe_commands` or `dangerous_commands` are permitted
-- **Per-command argument blacklists**: Prevent state-changing flags on otherwise safe commands
+- **Per-command argument whitelists/blacklists**: Restrict or block specific arguments on a per-command basis
 - **No sequencing operators**: Only pipelines (`|`) are supported — no `&&`, `||`, or `;`. The AI can make multiple tool calls for sequential operations
