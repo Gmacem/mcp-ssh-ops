@@ -2,7 +2,7 @@
 
 from mcp.server.fastmcp import FastMCP
 
-from .commands import CommandValidator
+from .commands import CommandValidator, Pipeline, build_shell_command
 from .host_memory import HostMemory
 from .ssh_client import SSHClient
 
@@ -15,7 +15,7 @@ memory = HostMemory()
 @mcp.tool()
 async def ssh_exec(
     hostname: str,
-    command: str,
+    pipeline: Pipeline,
     username: str = None,
     password: str = None,
     key_file: str = None,
@@ -23,7 +23,11 @@ async def ssh_exec(
     allow_dangerous: bool = False,
 ) -> str:
     """
-    Execute a command on a remote host via SSH.
+    Execute a command pipeline on a remote host via SSH.
+
+    Takes a structured pipeline instead of a raw command string.
+    Each command specifies a program and its arguments as separate fields.
+    The server constructs the shell command with proper escaping.
 
     Supports ~/.ssh/config: host aliases, default user/port/key, ProxyJump,
     and other directives are resolved automatically. Explicit arguments
@@ -31,7 +35,13 @@ async def ssh_exec(
 
     Args:
         hostname: SSH server hostname, IP, or host alias from ~/.ssh/config
-        command: Command to execute (must be in allowlist)
+        pipeline: Structured command pipeline, e.g.:
+            {"commands": [{"program": "ps", "args": ["aux"]}]}
+            {"commands": [
+                {"program": "ps", "args": ["aux"]},
+                {"program": "grep", "args": ["python"]},
+                {"program": "wc", "args": ["-l"]}
+            ]}
         username: SSH username (optional if set in ~/.ssh/config)
         password: SSH password (optional)
         key_file: Path to SSH private key (optional if set in ~/.ssh/config)
@@ -41,9 +51,13 @@ async def ssh_exec(
     Returns:
         Command output
     """
-    is_valid, error = validator.validate(command, allow_dangerous=allow_dangerous)
+    is_valid, error = validator.validate_pipeline(
+        pipeline, allow_dangerous=allow_dangerous
+    )
     if not is_valid:
         return f"ERROR: {error}"
+
+    command = build_shell_command(pipeline)
 
     try:
         async with SSHClient(

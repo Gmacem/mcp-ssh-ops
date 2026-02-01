@@ -1,54 +1,145 @@
 safe_commands:
-  - ps
-  - top
-  - htop
-  - pstree
-  - ss
-  - netstat
-  - ip
-  - ifconfig
-  - ping
-  - traceroute
-  - nslookup
-  - dig
-  - df
-  - du
-  - lsof
-  - lsblk
-  - findmnt
-  - free
-  - vmstat
-  - uptime
-  - who
-  - w
-  - last
-  - uname
-  - hostname
-  - date
-  - cat
-  - head
-  - tail
-  - less
-  - more
-  - journalctl
-  - dmesg
-  - grep
-  - awk
-  - sed
-  - sort
-  - uniq
-  - wc
-  - cut
-  - tr
+  # Process / CPU
+  ps:
+  top:
+  htop:
+  pstree:
+  mpstat:
+  pidstat:
+
+  # Memory
+  free:
+  vmstat:
+
+  # Performance / IO
+  sar:
+  iostat:
+
+  # Disk / Filesystem
+  df:
+  du:
+  lsof:
+  lsblk:
+  findmnt:
+  stat:
+  file:
+  blkid:
+
+  # Network
+  ss:
+  netstat:
+  ip:
+    args:
+      blacklist: [add, del, delete, set, flush, replace, change, append]
+  ping:
+  traceroute:
+  mtr:
+  nslookup:
+  dig:
+  host:
+  arp:
+    args:
+      blacklist: [-s, -d, --delete, -f, --file]
+  route:
+    args:
+      blacklist: [add, del, delete]
+
+  # System info
+  uptime:
+  who:
+  w:
+  last:
+  uname:
+  date:
+    args:
+      blacklist: [-s, --set]
+  id:
+  whoami:
+  groups:
+  printenv:
+
+  # Hardware
+  lscpu:
+  lsmem:
+  lspci:
+  lsusb:
+  nproc:
+  arch:
+  timedatectl:
+    args:
+      blacklist: [set-time, set-timezone, set-ntp, set-local-rtc]
+  hostnamectl:
+    args:
+      blacklist: [set-hostname, set-deployment, set-location, set-chassis, set-icon-name]
+
+  # File reading
+  cat:
+  head:
+  tail:
+  less:
+    args:
+      blacklist: [-o, -O]
+  more:
+  ls:
+  which:
+  whereis:
+
+  # Logs
+  journalctl:
+    args:
+      blacklist:
+        - --vacuum-size
+        - --vacuum-time
+        - --vacuum-files
+        - --rotate
+        - --flush
+        - --sync
+        - --relinquish-var
+        - --smart-relinquish-var
+  dmesg:
+    args:
+      blacklist: [-C, --clear, -c]
+
+  # Text processing
+  grep:
+  sort:
+    args:
+      blacklist: [-o, --output]
+  uniq:
+  wc:
+  cut:
+  tr:
+  diff:
+  strings:
+  tac:
+  column:
 
 dangerous_commands:
-  - kill
-  - pkill
-  - killall
-  - systemctl
-  - service
-  - tcpdump
-  - iperf
+  # Process management
+  kill:
+  pkill:
+  killall:
+
+  # Service management
+  systemctl:
+  service:
+
+  # Network capture / traffic
+  tcpdump:
+  iperf:
+  ifconfig:
+  ethtool:
+
+  # System
+  hostname:
+
+  # Debug / tracing
+  strace:
+  ltrace:
+
+  # Can execute arbitrary commands via internal scripting
+  awk:
+  sed:
 
 settings:
   allow_pipes: true
