@@ -18,9 +18,10 @@ mcp-ssh-ops/
 │   ├── __init__.py         # Package initialization
 │   ├── server.py           # MCP server implementation
 │   ├── ssh_client.py       # SSH client wrapper
-│   └── commands.py         # Command validation logic
+│   ├── commands.py         # Command validation logic
+│   ├── host_memory.py      # Host descriptions from hosts.yaml
+│   └── recap.py            # Optional command recap logging
 ├── commands.yaml           # Allowlist configuration
-├── server.py               # Entry point
 ├── pyproject.toml          # Project configuration
 └── README.md
 ```
@@ -34,10 +35,35 @@ uv sync
 
 2. Run the server:
 ```bash
-uv run server.py
-# or
 uv run mcp-ssh-ops
 ```
+
+### CLI Arguments
+
+| Argument | Description | Default |
+|---|---|---|
+| `--hosts-config PATH` | Path to `hosts.yaml` with host descriptions | None (empty host memory) |
+| `--commands-config PATH` | Path to `commands.yaml` with allowlist | `commands.yaml` next to the package |
+| `--recap-dir PATH` | Directory for saving command execution recaps | None (disabled) |
+
+Example MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "ssh-ops": {
+      "command": "mcp-ssh-ops",
+      "args": [
+        "--hosts-config", "/etc/mcp/hosts.yaml",
+        "--commands-config", "/etc/mcp/commands.yaml",
+        "--recap-dir", "/var/log/mcp-recaps"
+      ]
+    }
+  }
+}
+```
+
+When `--recap-dir` is set, each command execution is saved as a `.log` file under `recap-dir/YYYY-MM-DD/HHMMSS_ffffff.log`.
 
 ## Usage
 
