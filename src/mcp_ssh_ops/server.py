@@ -1,15 +1,20 @@
 """MCP server for executing safe commands over SSH."""
 
+import argparse
+from pathlib import Path
+
 from mcp.server.fastmcp import FastMCP
 
 from .commands import CommandValidator, Pipeline, build_shell_command
 from .host_memory import HostMemory
+from .recap import RecapLogger
 from .ssh_client import SSHClient
 
 
 mcp = FastMCP("SSH Operations")
-validator = CommandValidator()
-memory = HostMemory()
+validator: CommandValidator = None  # type: ignore[assignment]
+memory: HostMemory = None  # type: ignore[assignment]
+recap: RecapLogger = None  # type: ignore[assignment]
 
 
 @mcp.tool()
@@ -80,10 +85,13 @@ async def ssh_exec(
             if result["stderr"]:
                 output += f"STDERR:\n{result['stderr']}\n"
 
+            recap.save(hostname, command, output)
             return output
 
     except Exception as e:
-        return f"ERROR: {str(e)}"
+        error_output = f"ERROR: {str(e)}"
+        recap.save(hostname, command, error_output)
+        return error_output
 
 
 @mcp.tool()
@@ -150,6 +158,33 @@ async def list_commands(category: str = None) -> str:
 
 def main():
     """Run the MCP server."""
+    global validator, memory, recap
+
+    parser = argparse.ArgumentParser(description="MCP SSH Operations server")
+    parser.add_argument(
+        "--hosts-config",
+        type=Path,
+        default=None,
+        help="Path to hosts.yaml (omit for empty host memory)",
+    )
+    parser.add_argument(
+        "--commands-config",
+        type=Path,
+        default=None,
+        help="Path to commands.yaml (default: commands.yaml next to the package)",
+    )
+    parser.add_argument(
+        "--recap-dir",
+        type=Path,
+        default=None,
+        help="Directory for saving command recaps (omit to disable)",
+    )
+    args = parser.parse_args()
+
+    validator = CommandValidator(config_path=args.commands_config)
+    memory = HostMemory(config_path=args.hosts_config)
+    recap = RecapLogger(recap_dir=args.recap_dir)
+
     mcp.run()
 
 

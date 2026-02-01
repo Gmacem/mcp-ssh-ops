@@ -19,10 +19,10 @@ class HostMemory:
     """Loads host descriptions and per-host tools from hosts.yaml."""
 
     def __init__(self, config_path: Optional[Path] = None):
-        if config_path is None:
-            config_path = Path(__file__).parent.parent.parent / "hosts.yaml"
-
         self._hosts: dict[str, HostEntry] = {}
+
+        if config_path is None:
+            return
 
         if config_path.exists():
             with open(config_path) as f:
